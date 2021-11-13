@@ -18,8 +18,11 @@ basic_auth = BasicAuth(app)
 
 #movies
 movies = pd.read_csv("../../data/raw/movies.csv")
+# labeled movies
+labeled_movies = pd.read_csv("data/raw/labeled_movies.csv")
+
 #coluna de dados
-colunas = ['filmeId', 'nota_media', 'Drama', 'Documentary', 'Romance', 'Action',
+colunas = ['nota_media', 'Drama', 'Documentary', 'Romance', 'Action',
        'Adventure', 'IMAX', 'Horror', 'War', 'Musical', 'Sci-Fi', 'Fantasy',
        'Animation', 'Film-Noir', 'Crime', 'Mystery', 'Children', 'Comedy',
        'Western', 'Thriller']
@@ -44,15 +47,22 @@ def get_recomendations():
     playload = np.array([dados[col] for col in colunas])
     
     playload = playload.reshape(1, -1)
-    score = np.float(modelo.predict(playload))
-    score = int(score)
-    if(score):
-        return f'O filme que recomendamos para você é {movies.iloc[score][1]}'
+    cluster = np.float(modelo.predict(playload))
+    cluster = int(cluster)
+    return get_recomendations(cluster)
+    
+def get_recomendations(cluster):
+    movie_group = labeled_movies.loc[labeled_movies['class'] == cluster]
 
-    else:
-        return 'nada aqui'
-    
-    
+    selected_movies = movie_group.sample(n = 3)
+
+    recomendations = "Os filme que recomendamos para você são: \n"
+
+    for index, row in selected_movies.iterrows():
+        movie = movies.loc[movies['movieId'] == row['filmeId']].iloc[0]
+        recomendations = recomendations + movie['title'] + " - " + movie['genres'] + "\n"
+
+    return recomendations
 
 @app.route('/')
 def home():
