@@ -56,13 +56,15 @@ def get_recomendations(cluster):
 
     selected_movies = movie_group.sample(n = 3)
 
-    recomendations = "Os filme que recomendamos para você são: \n"
-
+    recomendations = list()
     for index, row in selected_movies.iterrows():
         movie = movies.loc[movies['movieId'] == row['filmeId']].iloc[0]
-        recomendations = recomendations + movie['title'] + " - " + movie['genres'] + "\n"
+        item = {}
+        item['movie'] = movie['title']
+        item['genres'] = movie['genres']
+        recomendations.append(item)
 
-    return recomendations
+    return jsonify(recomendations)
 
 @app.route('/')
 def home():
